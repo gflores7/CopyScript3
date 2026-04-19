@@ -11,7 +11,7 @@ const PORT = 3000;
 const db = mysql.createPool({
   host: '127.0.0.1',
   user: 'root',
-  password: 'Lloyd710',
+  password: '1234',
   database: 'finalDB',
   port: 3306,
   waitForConnections: true,

@@ -10,11 +10,10 @@ import {
   contactsList
 } from './doc.js';
 
-import { setText, requireLogin, showChatPanel } from './ui.js';
+import { setText, requireLogin } from './ui.js';
 
 import { selectContact } from './messages.js';
-
-import { setSelectedGroupChat } from './groupchats.js';
+let showingBlocked = false;
 
 
 export async function sendFriendRequest(event) {
@@ -53,11 +52,44 @@ export async function sendFriendRequest(event) {
 export async function loadFriends() {
   const currentUser = getCurrentUser();
 
-  if (!currentUser) {
-    return;
-  }
+  if (!currentUser) return;
 
   try {
+
+    
+    if (showingBlocked) {
+      const blocked = await api(`/friends/blocked/${currentUser.userID}`);
+
+      if (blocked.length === 0) {
+        friendsList.innerHTML = '<p>No blocked users.</p>';
+        return;
+      }
+
+      friendsList.innerHTML = blocked
+        .map(function (user) {
+          return `
+            <div class="friend-row">
+              <span>${user.userName}</span>
+              <div class="friend-actions">
+                <button class="unblock-btn" data-id="${user.userID}">Unblock</button>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      // unblock buttons only
+      friendsList.querySelectorAll('.unblock-btn')
+        .forEach(btn => {
+          btn.addEventListener('click', async function () {
+            await unblockUser(Number(btn.dataset.id));
+          });
+        });
+
+      return;
+    }
+
+    
     const friends = await api(`/friends/list/${currentUser.userID}`);
 
     if (friends.length === 0) {
@@ -67,16 +99,36 @@ export async function loadFriends() {
 
     friendsList.innerHTML = friends
       .map(function (friend) {
-        return `<div>${friend.userName}</div>`;
+        return `
+          <div class="friend-row">
+            <span>${friend.userName}</span>
+            <div class="friend-actions">
+              <button class="remove-btn" data-id="${friend.userID}">Unadd</button>
+              <button class="block-btn" data-id="${friend.userID}">Block</button>
+            </div>
+          </div>
+        `;
       })
       .join('');
+
+    friendsList.querySelectorAll('.remove-btn')
+      .forEach(btn => {
+        btn.addEventListener('click', async function () {
+          await removeFriend(Number(btn.dataset.id));
+        });
+      });
+
+    friendsList.querySelectorAll('.block-btn')
+      .forEach(btn => {
+        btn.addEventListener('click', async function () {
+          await blockUser(Number(btn.dataset.id));
+        });
+      });
 
   } catch (error) {
     friendsList.innerHTML = `<p class="error">${error.message}</p>`;
   }
 }
-
-
 
 export async function loadRequests() {
   const currentUser = getCurrentUser();
@@ -160,20 +212,10 @@ export async function loadContacts() {
     return;
   }
 
-  showChatPanel('Select someone to chat');
-  setSelectedGroupChat(null);
-
-  document.getElementById('leaveGroupBtn').style.display = 'none';
-  
   try {
-    const groupCreateBox = document.getElementById('groupCreateBox');
-  if (groupCreateBox) {
-      groupCreateBox.style.display = 'none';
-    }
+    const contacts = await api(`/users/${currentUser.userID}/contacts`);
 
     contactsList.innerHTML = '';
-
-    const contacts = await api(`/users/${currentUser.userID}/contacts`);
 
     if (contacts.length === 0) {
       contactsList.innerHTML = '<p>No contacts available.</p>';
@@ -197,3 +239,73 @@ export async function loadContacts() {
     contactsList.innerHTML = `<p class="error">${error.message}</p>`;
   }
 }
+
+async function removeFriend(friendID) {
+  const currentUser = getCurrentUser();
+
+  try {
+    const data = await api('/friends/remove', {
+      method: 'POST',
+      body: JSON.stringify({
+        currentUserID: currentUser.userID,
+        friendID: friendID
+      })
+    });
+
+    setText(friendResult, data.message);
+    await loadFriends();
+
+  } catch (error) {
+    setText(friendResult, error.message, true);
+  }
+}
+
+async function blockUser(friendID) {
+  const currentUser = getCurrentUser();
+
+  try {
+    const data = await api('/friends/block', {
+      method: 'POST',
+      body: JSON.stringify({
+        currentUserID: currentUser.userID,
+        targetUserID: friendID
+      })
+    });
+
+    setText(friendResult, data.message);
+    await loadFriends();
+
+  } catch (error) {
+    setText(friendResult, error.message, true);
+  }
+}
+
+async function unblockUser(friendID) {
+  const currentUser = getCurrentUser();
+
+  try {
+    const data = await api('/friends/unblock', {
+      method: 'POST',
+      body: JSON.stringify({
+        currentUserID: currentUser.userID,
+        targetUserID: friendID
+      })
+    });
+
+    setText(friendResult, data.message);
+    await loadFriends();
+
+  } catch (error) {
+    setText(friendResult, error.message, true);
+  }
+}
+document.getElementById('toggleBlockedBtn')
+  .addEventListener('click', async function () {
+    showingBlocked = !showingBlocked;
+
+    this.textContent = showingBlocked
+      ? 'Show Friends'
+      : 'Show Blocked Users';
+
+    await loadFriends();
+  });
