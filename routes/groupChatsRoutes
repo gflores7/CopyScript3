@@ -1,0 +1,169 @@
+// This file handles group chat backend by Gil
+
+module.exports = function (db) {
+  const express = require('express');
+  const router = express.Router();
+
+
+
+  router.post('/groups', async function (req, res) {
+    try {
+      const name = req.body.name;
+      const created_by = req.body.created_by;
+      const member_ids = req.body.member_ids;
+
+      if (!name || !created_by || !Array.isArray(member_ids) || member_ids.length === 0) {
+        return res.status(400).json({
+          message: 'Missing group data.'
+        });
+      }
+
+      const trimmedName = name.trim();
+
+      if (!trimmedName) {
+        return res.status(400).json({
+          message: 'Group name is required.'
+        });
+      }
+
+      const uniqueMembers = [...new Set(member_ids.map(Number))];
+
+      if (!uniqueMembers.includes(Number(created_by))) {
+        uniqueMembers.push(Number(created_by));
+      }
+
+      const [groupResult] = await db.query(
+        'INSERT INTO group_chats (name, created_by) VALUES (?, ?)',
+        [trimmedName, created_by]
+      );
+
+      const groupId = groupResult.insertId;
+
+      for (const userId of uniqueMembers) {
+        await db.query(
+          'INSERT INTO group_chat_members (group_id, user_id) VALUES (?, ?)',
+          [groupId, userId]
+        );
+      }
+
+      res.json({
+        message: 'Group created.',
+        groupId: groupId
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not create group.'
+      });
+    }
+  });
+
+
+
+  router.get('/groups/:userId', async function (req, res) {
+    try {
+      const userId = req.params.userId;
+
+      const [rows] = await db.query(
+        `SELECT g.id, g.name, g.created_by, g.created_at
+         FROM group_chats g
+         INNER JOIN group_chat_members gm
+           ON g.id = gm.group_id
+         WHERE gm.user_id = ?
+         ORDER BY g.name ASC`,
+        [userId]
+      );
+
+      res.json(rows);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not load groups.'
+      });
+    }
+  });
+
+
+
+  router.post('/group-messages', async function (req, res) {
+    try {
+      const group_id = req.body.group_id;
+      const sender_id = req.body.sender_id;
+      const message_text = req.body.message_text;
+
+      if (!group_id || !sender_id || !message_text) {
+        return res.status(400).json({
+          message: 'Missing group message data.'
+        });
+      }
+
+      await db.query(
+        'INSERT INTO group_messages (group_id, sender_id, message_text) VALUES (?, ?, ?)',
+        [group_id, sender_id, message_text.trim()]
+      );
+
+      res.json({
+        message: 'Group message sent.'
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not send group message.'
+      });
+    }
+  });
+
+
+
+  router.get('/group-messages/:groupId', async function (req, res) {
+    try {
+      const groupId = req.params.groupId;
+
+      const [rows] = await db.query(
+        `SELECT gm.id, gm.group_id, gm.sender_id, gm.message_text, gm.created_at,
+                u.first_name, u.last_name, u.userName
+         FROM group_messages gm
+         INNER JOIN users u
+           ON gm.sender_id = u.userID
+         WHERE gm.group_id = ?
+         ORDER BY gm.created_at ASC, gm.id ASC`,
+        [groupId]
+      );
+
+      res.json(rows);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not load group messages.'
+      });
+    }
+  });
+
+
+
+  router.post('/groups/leave', async function (req, res) {
+    try {
+      const group_id = req.body.group_id;
+      const user_id = req.body.user_id;
+
+      if (!group_id || !user_id) {
+        return res.status(400).json({
+          message: 'Missing leave group data.'
+        });
+      }
+
+      await db.query(
+        'DELETE FROM group_chat_members WHERE group_id = ? AND user_id = ?',
+        [group_id, user_id]
+      );
+
+      res.json({
+        message: 'Left group successfully.'
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not leave group.'
+      });
+    }
+  });
+
+
+
+  return router;
+};

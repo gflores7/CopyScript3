@@ -7,7 +7,16 @@
     "start": "node server.js"
   },
   "dependencies": {
+<<<<<<< HEAD
     "express": "^4.22.1",
     "mysql2": "^3.20.0"
   }
 }
+=======
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^4.22.1",
+    "mysql2": "^3.20.0"
+  }
+}
+>>>>>>> b62d3093348821586b713371f3f3d7db29d2d9d4

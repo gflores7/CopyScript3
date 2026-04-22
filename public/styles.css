@@ -165,8 +165,39 @@ button:hover {
   width: 100%;
   margin-bottom: 8px;
   text-align: left;
+<<<<<<< HEAD
 }
 
+=======
+
+  background: var(--accent);
+  color: #04130a;
+  font-weight: 700;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  padding: 12px;
+  transition: 0.2s ease;
+}
+
+.contact-btn:hover {
+  filter: brightness(1.1);
+}
+
+#leaveGroupBtn {
+  background: var(--danger);
+  color: rgb(255, 0, 0);
+  font-weight: 700;
+}
+
+#leaveGroupBtn:hover {
+  filter: brightness(1.1);
+}
+
+
+>>>>>>> b62d3093348821586b713371f3f3d7db29d2d9d4
 .message {
   padding: 10px 12px;
   border-radius: 12px;
