@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 // This file handles all social backend by Marcos
 
@@ -195,4 +196,203 @@ module.exports = function (db, makeId, getUserByUsername) {
 
 
   return router;
+=======
+
+// This file handles all social backend by Marcos
+
+
+
+
+module.exports = function (db, makeId, getUserByUsername) {
+  const express = require('express');
+  const router = express.Router();
+
+
+
+  router.post('/friends/request', async function (req, res) {
+    try {
+      const currentUserID = req.body.currentUserID;
+      const friendUsername = req.body.friendUsername;
+
+      if (!currentUserID || !friendUsername) {
+        return res.status(400).json({
+          message: 'Missing friend data.'
+        });
+      }
+
+      const friend = await getUserByUsername(friendUsername.trim());
+
+      if (!friend) {
+        return res.status(404).json({
+          message: 'User not found.'
+        });
+      }
+
+      if (Number(currentUserID) === Number(friend.userID)) {
+        return res.status(400).json({
+          message: 'You cannot add yourself.'
+        });
+      }
+
+      const [existing] = await db.query(
+        `SELECT *
+         FROM friendships
+         WHERE (sender_id = ? AND receiver_id = ?)
+            OR (sender_id = ? AND receiver_id = ?)`,
+        [currentUserID, friend.userID, friend.userID, currentUserID]
+      );
+
+      if (existing.length > 0) {
+        const row = existing[0];
+
+        if (row.status === 'accepted') {
+          return res.status(400).json({
+            message: 'You are already friends.'
+          });
+        }
+
+        if (row.status === 'pending') {
+          return res.status(400).json({
+            message: 'A friend request already exists.'
+          });
+        }
+
+        await db.query(
+          'UPDATE friendships SET sender_id = ?, receiver_id = ?, status = ? WHERE id = ?',
+          [currentUserID, friend.userID, 'pending', row.id]
+        );
+
+        return res.json({
+          message: 'Friend request re-sent.'
+        });
+      }
+
+      await db.query(
+        `INSERT INTO friendships (id, sender_id, receiver_id, status)
+         VALUES (?, ?, ?, 'pending')`,
+        [makeId(), currentUserID, friend.userID]
+      );
+
+      res.json({
+        message: 'Friend request sent.'
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not send friend request.'
+      });
+    }
+  });
+
+
+
+  router.get('/friends/requests/:userID', async function (req, res) {
+    try {
+      const userID = req.params.userID;
+
+      const [rows] = await db.query(
+        `SELECT f.sender_id, u.userName AS senderName
+         FROM friendships f
+         JOIN users u ON u.userID = f.sender_id
+         WHERE f.receiver_id = ? AND f.status = 'pending'
+         ORDER BY f.created_at DESC`,
+        [userID]
+      );
+
+      res.json(rows);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not load friend requests.'
+      });
+    }
+  });
+
+
+
+  router.post('/friends/respond', async function (req, res) {
+    try {
+      const sender_id = req.body.sender_id;
+      const receiver_id = req.body.receiver_id;
+      const accept = req.body.accept;
+
+      const newStatus = accept ? 'accepted' : 'rejected';
+
+      const [result] = await db.query(
+        `UPDATE friendships
+         SET status = ?
+         WHERE sender_id = ? AND receiver_id = ? AND status = 'pending'`,
+        [newStatus, sender_id, receiver_id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          message: 'Request not found.'
+        });
+      }
+
+      res.json({
+        message: accept ? 'Friend request accepted.' : 'Friend request denied.'
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not update friend request.'
+      });
+    }
+  });
+
+
+
+  router.get('/friends/list/:userID', async function (req, res) {
+    try {
+      const userID = req.params.userID;
+
+      const [rows] = await db.query(
+        `SELECT u.userID, u.userName
+         FROM friendships f
+         JOIN users u ON (
+           (u.userID = f.sender_id AND f.receiver_id = ?)
+           OR (u.userID = f.receiver_id AND f.sender_id = ?)
+         )
+         WHERE f.status = 'accepted'
+         ORDER BY u.userName`,
+        [userID, userID]
+      );
+
+      res.json(rows);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Could not load friends.'
+      });
+    }
+  });
+
+
+
+  router.get('/users/:userID/contacts', async function (req, res) {
+  try {
+    const userID = req.params.userID;
+
+    const [rows] = await db.query(
+      `SELECT u.userID, u.userName, u.first_name, u.last_name
+       FROM friendships f
+       JOIN users u ON (
+         (u.userID = f.sender_id AND f.receiver_id = ?)
+         OR (u.userID = f.receiver_id AND f.sender_id = ?)
+       )
+       WHERE f.status = 'accepted'
+       ORDER BY u.userName`,
+      [userID, userID]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Could not load contacts.'
+    });
+  }
+});
+
+
+
+  return router;
+>>>>>>> b62d3093348821586b713371f3f3d7db29d2d9d4
 };

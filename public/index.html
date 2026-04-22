@@ -117,6 +117,7 @@
 
 
     <!-- MESSAGING -->
+<<<<<<< HEAD
     <section class="card wide">
 
       <h2>Messaging</h2>
@@ -137,6 +138,47 @@
         </div>
       </div>
     </section>
+=======
+<section class="card wide">
+
+  <h2>Messaging</h2>
+  <div class="contacts-layout">
+    <div>
+      <h3>Contacts</h3>
+
+      <div class="row gap small-top">
+        <button type="button" id="showDirectBtn">Direct Messages</button>
+        <button type="button" id="showGroupsBtn">Group Chats</button>
+      </div>
+
+      <div id="groupCreateBox" class="list-box" style="display: none;">
+        <h3>Create Group</h3>
+
+        <form id="createGroupForm" class="stack">
+          <input id="groupNameInput" placeholder="Group name" />
+          <div id="groupMembersPick" class="stack"></div>
+          <button type="submit">Create Group</button>
+        </form>
+      </div>
+
+      <div id="contactsList" class="list-box contacts"></div>
+    </div>
+
+    <div id="chatPanel" style="display: none;">
+      <h3 id="chatTitle"></h3>
+      <button id="leaveGroupBtn" style="display:none; margin-bottom:10px;">
+    Leave Group
+      </button>
+      <div id="messagesBox" class="messages-box"></div>
+
+      <form id="messageForm" class="row gap small-top">
+        <input id="messageInput" placeholder="Type a message" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+</section>
+>>>>>>> b62d3093348821586b713371f3f3d7db29d2d9d4
 
 
 
