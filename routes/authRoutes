@@ -1,123 +1,8 @@
-<<<<<<< HEAD
-// This file handles all user account and authentication backend routes.
-
-module.exports = function (db, hashPassword) {
-  const express = require('express');
-  const router = express.Router();
-
-  router.get('/health', async function (req, res) {
-    try {
-      await db.query('SELECT 1');
-
-      res.json({
-        ok: true
-      });
-    } catch (error) {
-      console.error('HEALTH ERROR:', error);
-
-      res.status(500).json({
-        ok: false,
-        error: error.message
-      });
-    }
-  });
-
-  router.post('/register', async function (req, res) {
-    try {
-      const userName = req.body.userName;
-      const firstName = req.body.first_name;
-      const lastName = req.body.last_name;
-      const email = req.body.email;
-      const password = req.body.password;
-
-      if (!userName || !firstName || !lastName || !email || !password) {
-        return res.status(400).json({
-          message: 'All fields are required.'
-        });
-      }
-
-      const [result] = await db.query(
-        `INSERT INTO users (userName, first_name, last_name, email, password)
-         VALUES (?, ?, ?, ?, ?)`,
-        [
-          userName.trim(),
-          firstName.trim(),
-          lastName.trim(),
-          email.trim(),
-          hashPassword(password)
-        ]
-      );
-
-      res.json({
-        message: 'User created successfully.',
-        userID: result.insertId
-      });
-    } catch (error) {
-      console.error('REGISTER ERROR:', error);
-
-      if (error.code === 'ER_DUP_ENTRY') {
-        return res.status(400).json({
-          message: 'Username or email already exists.'
-        });
-      }
-
-      res.status(500).json({
-        message: error.message
-      });
-    }
-  });
-
-  router.post('/login', async function (req, res) {
-    try {
-      const userName = req.body.userName;
-      const password = req.body.password;
-
-      if (!userName || !password) {
-        return res.status(400).json({
-          message: 'Username and password are required.'
-        });
-      }
-
-      const [rows] = await db.query(
-        `SELECT userID, userName, first_name, last_name, email
-         FROM users
-         WHERE userName = ? AND password = ?`,
-        [userName.trim(), hashPassword(password)]
-      );
-
-      if (rows.length === 0) {
-        return res.status(401).json({
-          message: 'Invalid username or password.'
-        });
-      }
-
-      res.json({
-        message: 'Login successful.',
-        user: rows[0]
-      });
-    } catch (error) {
-      console.error('LOGIN ERROR:', error);
-
-      res.status(500).json({
-        message: error.message
-      });
-    }
-  });
-
-  return router;
-=======
-
-
 // This file handles all user account/authentication backend 
 
-
-
-
 module.exports = function (db, hashPassword) {
   const express = require('express');
   const router = express.Router();
-
-
 
   router.get('/health', async function (req, res) {
     try {
@@ -133,8 +18,6 @@ module.exports = function (db, hashPassword) {
       });
     }
   });
-
-
 
   router.post('/register', async function (req, res) {
     try {
@@ -179,8 +62,6 @@ module.exports = function (db, hashPassword) {
     }
   });
 
-
-
   router.post('/login', async function (req, res) {
     try {
       const userName = req.body.userName;
@@ -216,8 +97,5 @@ module.exports = function (db, hashPassword) {
     }
   });
 
-
-
   return router;
->>>>>>> b62d3093348821586b713371f3f3d7db29d2d9d4
 };

@@ -9,7 +9,6 @@
 
 <body>
 
-  <!-- HEADER -->
   <header class="hero">
     <img src="./Convoy.jpg" alt="Convoy logo" class="logo" />
     <div>
@@ -18,13 +17,10 @@
     </div>
   </header>
 
-
-
   <main class="grid">
 
     <!-- CREATE USER -->
     <section class="card">
-
       <h2>Create User</h2>
       <form id="registerForm" class="stack">
         <input id="regUserName" placeholder="Username" required />
@@ -37,11 +33,8 @@
       <p id="registerResult" class="result"></p>
     </section>
 
-
-
     <!-- LOGIN -->
     <section class="card">
-
       <h2>Login</h2>
       <form id="loginForm" class="stack">
         <input id="loginUserName" placeholder="Username" required />
@@ -57,11 +50,8 @@
       <p id="currentUser" class="current-user">Not logged in.</p>
     </section>
 
-
-
     <!-- CONVOYS -->
     <section class="card">
-
       <h2>Create / Join Convoy</h2>
 
       <form id="createConvoyForm" class="stack">
@@ -87,14 +77,10 @@
 
       <div id="membersList" class="list-box"></div>
       <div id="gpsList" class="list-box"></div>
-
     </section>
-
-
 
     <!-- FRIENDS -->
     <section class="card">
-
       <h2>Friends</h2>
 
       <form id="friendRequestForm" class="stack">
@@ -105,30 +91,47 @@
       <div class="row gap small-top">
         <button id="showFriendsBtn" type="button">Show Friends</button>
         <button id="showRequestsBtn" type="button">Show Requests</button>
+        <button id="toggleBlockedBtn" type="button">Show Blocked Users</button>
       </div>
 
       <p id="friendResult" class="result"></p>
 
       <div id="friendsList" class="list-box"></div>
       <div id="requestsList" class="list-box"></div>
-
     </section>
 
-
-
     <!-- MESSAGING -->
-<<<<<<< HEAD
     <section class="card wide">
-
       <h2>Messaging</h2>
       <div class="contacts-layout">
         <div>
           <h3>Contacts</h3>
+
+          <div class="row gap small-top">
+            <button type="button" id="showDirectBtn">Direct Messages</button>
+            <button type="button" id="showGroupsBtn">Group Chats</button>
+          </div>
+
+          <div id="groupCreateBox" class="list-box" style="display: none;">
+            <h3>Create Group</h3>
+
+            <form id="createGroupForm" class="stack">
+              <input id="groupNameInput" placeholder="Group name" />
+              <div id="groupMembersPick" class="stack"></div>
+              <button type="submit">Create Group</button>
+            </form>
+          </div>
+
           <div id="contactsList" class="list-box contacts"></div>
         </div>
 
-        <div>
-          <h3 id="chatTitle">Select someone to chat</h3>
+        <div id="chatPanel" style="display: none;">
+          <h3 id="chatTitle"></h3>
+
+          <button id="leaveGroupBtn" style="display:none; margin-bottom:10px;">
+            Leave Group
+          </button>
+
           <div id="messagesBox" class="messages-box"></div>
 
           <form id="messageForm" class="row gap small-top">
@@ -138,62 +141,17 @@
         </div>
       </div>
     </section>
-=======
-<section class="card wide">
-
-  <h2>Messaging</h2>
-  <div class="contacts-layout">
-    <div>
-      <h3>Contacts</h3>
-
-      <div class="row gap small-top">
-        <button type="button" id="showDirectBtn">Direct Messages</button>
-        <button type="button" id="showGroupsBtn">Group Chats</button>
-      </div>
-
-      <div id="groupCreateBox" class="list-box" style="display: none;">
-        <h3>Create Group</h3>
-
-        <form id="createGroupForm" class="stack">
-          <input id="groupNameInput" placeholder="Group name" />
-          <div id="groupMembersPick" class="stack"></div>
-          <button type="submit">Create Group</button>
-        </form>
-      </div>
-
-      <div id="contactsList" class="list-box contacts"></div>
-    </div>
-
-    <div id="chatPanel" style="display: none;">
-      <h3 id="chatTitle"></h3>
-      <button id="leaveGroupBtn" style="display:none; margin-bottom:10px;">
-    Leave Group
-      </button>
-      <div id="messagesBox" class="messages-box"></div>
-
-      <form id="messageForm" class="row gap small-top">
-        <input id="messageInput" placeholder="Type a message" />
-        <button type="submit">Send</button>
-      </form>
-    </div>
-  </div>
-</section>
->>>>>>> b62d3093348821586b713371f3f3d7db29d2d9d4
-
-
 
     <!-- GPS -->
     <section class="card wide">
-
       <h2>GPS</h2>
       <div class="row gap wrap">
         <button id="shareLocationBtn" type="button">Share My Location</button>
       </div>
       <p id="gpsResult" class="result"></p>
     </section>
+
   </main>
-
-
 
   <script type="module" src="./app.js"></script>
 

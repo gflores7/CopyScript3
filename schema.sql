@@ -84,3 +84,25 @@ INSERT INTO users (userName, first_name, last_name, email, password)
 VALUES
 ('JMomen', 'Momen', 'Jaber', 'momen@example.com', SHA2('Test123!', 256)),
 ('TestUser2', 'Ali', 'Khan', 'ali@example.com', SHA2('Test456!', 256));
+
+CREATE TABLE blocks (
+    id INT NOT NULL AUTO_INCREMENT,
+    blocker_id INT NOT NULL,
+    blocked_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_block_pair (blocker_id, blocked_id),
+    CONSTRAINT fk_blocks_blocker FOREIGN KEY (blocker_id) REFERENCES users(userID) ON DELETE CASCADE,
+    CONSTRAINT fk_blocks_blocked FOREIGN KEY (blocked_id) REFERENCES users(userID) ON DELETE CASCADE
+);
+
+CREATE TABLE blocks (
+    id INT NOT NULL AUTO_INCREMENT,
+    blocker_id INT NOT NULL,
+    blocked_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_block_pair (blocker_id, blocked_id),
+    CONSTRAINT fk_blocks_blocker FOREIGN KEY (blocker_id) REFERENCES users(userID) ON DELETE CASCADE,
+    CONSTRAINT fk_blocks_blocked FOREIGN KEY (blocked_id) REFERENCES users(userID) ON DELETE CASCADE
+);
